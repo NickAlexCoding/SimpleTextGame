@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Text Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Stats Panel on the Left -->
+        <div id="stats-panel">
+            <h2>Player Stats</h2>
+            <div id="stats">
+                <!-- Player stats will be displayed dynamically here -->
+            </div>
+        </div>
+
+        <!-- Main Game Area on the Right -->
+        <div id="main-game-area">
+            <h1>Simple Text Game</h1>
+            <div id="output"></div>
+            <div id="actions">
+                <!-- Updated buttons with shared class -->
+                <button class="action-button" onclick="takeStep()">Take a Step</button>
+                <button class="action-button" onclick="exitGame()">Exit Game</button>
+            </div>
+            <button id="attackButton" class="action-button" onclick="playerAttack()" style="display:none;">Attack</button>
+            <button class="action-button" onclick="buyHealthPotion()">Buy Health Potion (20 coins)</button>
+            <button class="action-button" onclick="useHealthPotion()">Use Health Potion</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

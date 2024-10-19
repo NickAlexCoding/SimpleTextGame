@@ -1,0 +1,71 @@
+/* style.css */
+body {
+    font-family: 'Verdana', sans-serif;
+    background-color: #eaeaea;  /* Soft neutral background */
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    height: 100vh;
+}
+
+#game-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);  /* Soft shadow for the container */
+    border-radius: 8px;  /* Slight rounding for a clean look */
+    overflow: hidden;  /* Prevents content overflow */
+}
+
+#stats-panel {
+    width: 25%;  /* More space for stats */
+    background-color: #f7f7f7;  /* Neutral light grey background */
+    padding: 20px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);  /* Subtle inner shadow */
+    font-size: 16px;
+    border-right: 1px solid #ccc;  /* Slight border to separate sections */
+}
+
+#stats-panel h2 {
+    margin-top: 0;
+    color: #333;  /* Darker text for contrast */
+    font-weight: bold;
+}
+
+#main-game-area {
+    width: 75%;
+    padding: 25px;
+    background-color: #ffffff;  /* Clean white background for contrast */
+    color: #333;
+}
+
+#output {
+    margin-bottom: 20px;
+    min-height: 120px;  /* Increased height for text readability */
+    border: 1px solid #ddd;
+    padding: 15px;
+    background-color: #fafafa;  /* Very light grey background */
+    font-size: 16px;
+    color: #333;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);  /* Soft shadow for depth */
+    border-radius: 5px;
+}
+
+/* Shared button styling */
+.action-button {
+    margin: 5px;
+    padding: 10px 20px;  /* Smaller padding for smaller buttons */
+    border: none;
+    background-color: #228B22;  /* Forest green background */
+    color: #fff;  /* White text */
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;  /* Slightly smaller text size */
+    transition: background-color 0.75s ease, color 0.75s ease;  /* Longer transition */
+}
+
+/* Hover effect for buttons */
+.action-button:hover {
+    background-color: #32CD32;  /* Lime green background on hover */
+    color: #000;  /* Black text on hover */
+}
