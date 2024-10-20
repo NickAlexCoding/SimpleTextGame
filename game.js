@@ -1,64 +1,44 @@
-// Player Object (initially empty, to be loaded from localStorage if available)
-let player = {};
-
-// Initialize player data or prompt for new player
-function initializePlayer() {
-    const savedPlayer = localStorage.getItem('player');
-    if (savedPlayer) {
-        player = JSON.parse(savedPlayer);
-
-        // Ensure proper initialization of player properties
-        player.hp = player.hp || 100;
-        player.maxHp = player.maxHp || 100;
-        player.attack = player.attack || 10;
-        player.defense = player.defense || 0;
-        player.coins = player.coins || 50;
-
-        // Ensure inventory and equipment are initialized properly
-        player.inventory = player.inventory || {};
-        player.inventory.healthPotions = player.inventory.healthPotions || 0;
-        player.inventory.equipment = player.inventory.equipment || {
+// Player object
+const player = {
+    name: 'Hero',
+    hp: 100,
+    maxHp: 100,
+    attack: 10,
+    defense: 5,
+    coins: 0,
+    inventory: {
+        healthPotions: 2,
+        equipment: {
             weapon: null,
             armor: null
-        };
-
-        displayStats();  // Display stats on load
-    } else {
-        // If no saved data, create a new player
-        const name = prompt("Enter your player's name:");
-        player = {
-            name: name || "Player",
-            hp: 100,
-            maxHp: 100,
-            attack: 10,
-            defense: 0,
-            coins: 50,
-            inventory: {
-                healthPotions: 0,
-                equipment: {
-                    weapon: null,
-                    armor: null
-                }
-            }
-        };
-        saveGame();
-        displayStats();  // Display stats for new player
+        }
     }
-}
+};
 
-// Function to display game messages in the output div
-function updateOutput(message, append = false) {
-    const outputElement = document.getElementById('output');
-    if (append) {
-        outputElement.innerHTML += `<p>${message}</p>`;  // Append the message
-    } else {
-        outputElement.innerHTML = `<p>${message}</p>`;  // Replace current message
-    }
-}
+// Monster object
+const monster = {
+    name: 'Goblin',
+    hp: 50,
+    attack: 8,
+    defense: 3
+};
 
-// Save Game Functionality (completely silent)
+// Save player object to localStorage
 function saveGame() {
-    localStorage.setItem('player', JSON.stringify(player));  // Save player object, including inventory, to localStorage
+    localStorage.setItem('player', JSON.stringify(player));
+    updateOutput('Game saved!', true);
+}
+
+// Load player object from localStorage
+function loadGame() {
+    const savedPlayer = localStorage.getItem('player');
+    if (savedPlayer) {
+        Object.assign(player, JSON.parse(savedPlayer));
+        updateOutput('Game loaded!', true);
+    } else {
+        updateOutput('No saved game found.', true);
+    }
+    displayStats();
 }
 
 // Display player stats in the stats panel
@@ -76,136 +56,128 @@ function displayStats() {
     `;
 }
 
-// Take a step and trigger random events
-function takeStep() {
-    const events = ['monster', 'treasure', 'nothing'];
-    const event = events[Math.floor(Math.random() * events.length)];
-
-    if (event === 'monster') {
-        updateOutput("You encounter a monster!", false);  // Clear output and show monster message
-        startCombat();  // Handle combat
-    } else if (event === 'treasure') {
-        addItemToInventory('coins', Math.floor(Math.random() * 20) + 10);
-        updateOutput("You found treasure! You received some coins.", true);  // Append treasure message
-        saveGame();  // Auto-save silently after treasure
+// Update output area
+function updateOutput(message, append = false) {
+    const outputDiv = document.getElementById('output');
+    if (append) {
+        outputDiv.innerHTML += `<p>${message}</p>`;
     } else {
-        updateOutput("Nothing happens this time.", false);  // Clear output for nothing event
-        saveGame();  // Auto-save silently after nothing happens
+        outputDiv.innerHTML = `<p>${message}</p>`;
     }
 }
 
-// Start Combat with Monster
-function startCombat() {
-    currentMonster = { name: "Goblin", hp: Math.floor(Math.random() * 40) + 20, attack: Math.floor(Math.random() * 5) + 5 };
-    updateOutput(`A wild ${currentMonster.name} appears with ${currentMonster.hp} HP!`, true);
-    document.getElementById('attackButton').style.display = 'block';
-}
-
-// Player attacks the monster
-function playerAttack() {
-    const playerDamage = Math.floor(Math.random() * 10) + player.attack;  // Attack based on equipped weapon
-    currentMonster.hp -= playerDamage;
-    updateOutput(`You hit the ${currentMonster.name} for ${playerDamage} damage. It has ${currentMonster.hp} HP left.`, true);
-    
-    if (currentMonster.hp > 0) {
-        monsterAttack();  // Monster counter-attacks if it's still alive
-    } else {
-        updateOutput(`You defeated the ${currentMonster.name}!`, true);
-        document.getElementById('attackButton').style.display = 'none';  // Hide attack button after battle
-        generateLoot();  // Generate loot after defeating the monster
-        saveGame();  // Save game after battle
-    }
-}
-
-// Monster counter-attacks the player
-function monsterAttack() {
-    const monsterDamage = Math.floor(Math.random() * 8) + 3;  // Random damage between 3 and 10
-    player.hp -= monsterDamage;
-    updateOutput(`The ${currentMonster.name} hits you for ${monsterDamage} damage. You have ${player.hp} HP left.`, true);
-    
-    if (player.hp <= 0) {
-        player.hp = player.maxHp;  // Regenerate health after defeat
-        updateOutput("You were defeated but your health has been fully restored!", true);
-        document.getElementById('attackButton').style.display = 'none';  // Hide attack button after defeat
-        saveGame();  // Save game after defeat and regeneration
-    } else {
-        saveGame();  // Save game after the monster's turn
-    }
-}
-
-// Generate random loot after defeating a monster
-function generateLoot() {
-    const randomLoot = Math.random() < 0.8 ? lootTable.common : lootTable.rare;
-    const loot = randomLoot[Math.floor(Math.random() * randomLoot.length)];
-
-    if (loot === 'coins') {
-        const amount = Math.floor(Math.random() * 30) + 20;  // Random amount of coins
-        addItemToInventory('coins', amount);
-        updateOutput(`You looted ${amount} coins!`, true);
-    } else if (loot === 'healthPotion') {
-        addItemToInventory('healthPotion', 1);
-        updateOutput(`You looted a health potion!`, true);
-    } else if (loot === 'sword' || loot === 'shield') {
-        addEquipment(loot);  // Equip the item
-        updateOutput(`You looted a ${loot}!`, true);
-    }
-}
-
-// Add Items to Inventory (coins, health potions, or equipment)
+// Add item to inventory
 function addItemToInventory(item, amount) {
     if (item === 'coins') {
         player.coins += amount;
-    } else if (item === 'healthPotion') {
+    } else if (item === 'healthPotions') {
         player.inventory.healthPotions += amount;
     }
-    saveGame();
     displayStats();
 }
 
-// Equip items (weapon or armor)
-function addEquipment(equipment) {
-    if (equipment === 'sword') {
-        player.inventory.equipment.weapon = 'sword';
-        player.attack += 5;  // Sword increases attack by 5
-    } else if (equipment === 'shield') {
-        player.inventory.equipment.armor = 'shield';
-        player.defense += 3;  // Shield increases defense by 3
-    }
-    saveGame();
-    displayStats();
-}
-
-// Buy health potions from the shop
-function buyHealthPotion() {
-    const potionCost = 20;  // Set a cost for health potions
-    if (player.coins >= potionCost) {
-        player.coins -= potionCost;
-        addItemToInventory('healthPotion', 1);  // Add 1 health potion to inventory
-    } else {
-        updateOutput("You don't have enough coins to buy a health potion.", true);
-    }
-}
-
-// Use health potion to restore health (can be used at any time)
+// Use health potion
 function useHealthPotion() {
     if (player.inventory.healthPotions > 0) {
+        player.hp = Math.min(player.maxHp, player.hp + 20);
         player.inventory.healthPotions -= 1;
-
-        // Ensure player.hp is a number and cap it at maxHp after healing
-        player.hp = Math.min(player.maxHp, (isNaN(player.hp) ? 0 : player.hp) + 50);  // Add 50 HP, but not exceeding maxHp
-        
-        updateOutput("You used a health potion and restored 50 HP!", true);
-        saveGame();
-        displayStats();  // Update stats after using potion
+        updateOutput('You used a health potion.', true);
+        displayStats();
     } else {
-        updateOutput("You don't have any health potions!", true);
+        updateOutput('You have no health potions left.', true);
     }
 }
 
-// Save Game Functionality (completely silent)
-function saveGame() {
-    localStorage.setItem('player', JSON.stringify(player));  // Save player object, including inventory, to localStorage
+// Start combat
+function startCombat() {
+    document.getElementById('attackButton').style.display = 'inline-block';
+    updateOutput(`A wild ${monster.name} appears!`, false);
 }
 
-// Call the initialization function on page load
-initializePlayer();
+// Attack monster
+function attackMonster() {
+    const playerDamage = Math.max(0, player.attack - monster.defense + Math.floor(Math.random() * 5));
+    const monsterDamage = Math.max(0, monster.attack - player.defense + Math.floor(Math.random() * 5));
+
+    monster.hp -= playerDamage;
+    player.hp -= monsterDamage;
+
+    updateOutput(`You dealt ${playerDamage} damage to the ${monster.name}.`, true);
+    updateOutput(`The ${monster.name} dealt ${monsterDamage} damage to you.`, true);
+
+    if (monster.hp <= 0) {
+        updateOutput(`You defeated the ${monster.name}!`, true);
+        addItemToInventory('coins', Math.floor(Math.random() * 20) + 10);
+        document.getElementById('attackButton').style.display = 'none';
+        monster.hp = 50; // Reset monster HP for next encounter
+    }
+
+    if (player.hp <= 0) {
+        updateOutput(`You have been defeated! Game over.`, true);
+        document.getElementById('attackButton').style.display = 'none';
+    }
+
+    displayStats();
+}
+
+// Buy item from shop
+function buyItem(item) {
+    if (item === 'healthPotion' && player.coins >= 10) {
+        player.coins -= 10;
+        player.inventory.healthPotions += 1;
+        updateOutput('You bought a health potion.', true);
+    } else if (item === 'weapon' && player.coins >= 50) {
+        player.coins -= 50;
+        player.attack += 5;
+        player.inventory.equipment.weapon = 'Sword';
+        updateOutput('You bought a sword.', true);
+    } else if (item === 'armor' && player.coins >= 50) {
+        player.coins -= 50;
+        player.defense += 5;
+        player.inventory.equipment.armor = 'Shield';
+        updateOutput('You bought a shield.', true);
+    } else {
+        updateOutput('You do not have enough coins.', true);
+    }
+    displayStats();
+}
+
+// Take a step and trigger random events
+function takeStep() {
+    const events = ['monster', 'treasure', 'nothing', 'shop'];
+    const event = events[Math.floor(Math.random() * events.length)];
+
+    if (event === 'monster') {
+        updateOutput("You encounter a monster!", false);
+        startCombat();
+    } else if (event === 'treasure') {
+        addItemToInventory('coins', Math.floor(Math.random() * 20) + 10);
+        updateOutput("You found treasure! You received some coins.", true);
+        saveGame();
+    } else if (event === 'shop') {
+        document.getElementById('shop').style.display = 'block';
+        updateOutput("You found a shop!", false);
+    } else {
+        updateOutput("Nothing happens this time.", false);
+    }
+}
+
+// Initialize game
+function initGame() {
+    const savedPlayer = localStorage.getItem('player');
+    if (savedPlayer) {
+        Object.assign(player, JSON.parse(savedPlayer));
+    }
+    displayStats();
+    document.getElementById('takeStepButton').addEventListener('click', takeStep);
+    document.getElementById('attackButton').addEventListener('click', attackMonster);
+    document.getElementById('buyPotionButton').addEventListener('click', () => buyItem('healthPotion'));
+    document.getElementById('buyWeaponButton').addEventListener('click', () => buyItem('weapon'));
+    document.getElementById('buyArmorButton').addEventListener('click', () => buyItem('armor'));
+    document.getElementById('usePotionButton').addEventListener('click', useHealthPotion);
+    document.getElementById('saveButton').addEventListener('click', saveGame);
+    document.getElementById('loadButton').addEventListener('click', loadGame);
+}
+
+// Start the game
+initGame();
